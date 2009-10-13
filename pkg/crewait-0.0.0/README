@@ -1,1 +1,142 @@
-Crewait helps you perform bulk insertion of ActiveRecord objects while using ActiveRecord like language. For instance, suppose you have a User model, and you want to create 10,000 users -- 
+Crewait helps you perform bulk insertion of ActiveRecord objects while using ActiveRecord like language.
+
+Suppose you had a csv with a bunch of user data. You want to be able to pull information out of the csv and into your Ruby world intelligently, but you also want to do it as quickly as possible. So, we let you use a familiar notation -- User.crewait, instead of User.create -- and then we perform a single SQL call (or rather n, where n = (the_length_of_the_sql_insert_string/1_000_000.0).ceil calls).
+
+What you would do without "crewait" or AR extensions:
+
+FasterCSV.foreach(csv_path) do |row|
+
+	User.create(
+		:username => row[0],
+		:email => row[2],
+		:first_name => row[3],
+		:last_name => row[4]
+	)
+	
+end
+
+How long it would take:
+
+What you would do with AR extensions:
+
+array = []
+
+FasterCSV.foreach(csv_path) do |row|
+  
+  row.delete_at(1)
+  array << row
+
+end
+
+User.import(
+  [:username, :email, :first_name, :last_name],
+  array
+)
+
+How long it would take:
+
+Crewait.start_waiting
+
+FasterCSV.foreach(csv_path) do |row|
+
+	User.crewait(
+		:username => row[0],
+		:email => row[2],
+		:first_name => row[3],
+		:last_name => row[4]
+	)
+	
+end
+
+Crewait.go!
+
+How long it would take:
+
+How does it work? The answer is that "crewait" isn't actually creating a User object all, but is simply taking the hash passed to it and storing it in another hash, which awaits the "go!" method. So, you might ask, what if you need the object that would normally be returned by "create"? For instance, what if you need to include foreign keys in your bulk insertion? Consider this example, in which we have a Product model, a Store model, and a join table Availability (which specifies whether or not a given product is available at a given store). Suppose we have a csv with a row for each availability -- where the first row is the name of the product and second row is the name of the store its available at. You can see that on the first appearance of a given product or store, it gets "crewait"-ed, and the resulting object is added to a hash. For each availability, the "crewait"-ed product and store are pulled out of their respective hashes, and then we call the id method on them. As long as there's no one else interacting with these tables in your database, Crewait knows what those ids will be once the insertion is complete, and lets you write code pretty much as you would anyway:
+
+
+How you might do using ActiveRecord:
+
+product_hash = {}
+store_hash = {}
+FasterCSV.foreach(csv_path) do |row|
+
+	product = (product_hash[row[0]] ||= Product.create(
+		:name => row[0]
+	))
+
+	store = (store_hash[row[1]] ||= Store.create(
+		:name => row[1]
+	))
+
+	product.stores << store
+
+end
+
+What you might do using AR Extensions:
+
+class ActiveRecord::Base
+def next_insert_id
+  database = YAML.load(open(File.join('config', 'database.yml')))[RAILS_ENV]['database']
+  ActiveRecord::Base.connection.execute( "
+    SELECT auto_increment
+    FROM information_schema.tables
+    WHERE table_name='#{self.table_name}' AND
+          table_schema ='#{database}'
+  " ).fetch_hash['auto_increment'].to_i
+end
+product_hash = {}
+store_hash = {}
+availability_array = []
+FasterCSV.foreach(csv_path) do |row|
+
+	product = (product_hash[row[0]] ||= Product.next_insert_id + product_hash.length)
+
+	store = (store_hash[row[1]] ||= Store.next_insert_id + store_hash.length)
+	
+	availability_array << [product_hash[row[0]], store_hash[row[1]]]
+end
+
+Product.import(
+  [:name],
+  product_hash.values.map {|x| [x]}
+)
+Store.import(
+  [:name],
+  store_hash.values.map {|x| [x]}
+)
+Availability.import(
+  [:product_id, :store_id],
+  availability_array
+)
+
+# IT WOULD BE UGLY 
+# I'M RUSHED 
+# PLEASE TRUST ME NYC.RB!
+
+
+Crewait.start_waiting
+
+product_hash = {}
+store_hash = {}
+FasterCSV.foreach(csv_path) do |row|
+
+	product = (product_hash[row[0]] ||= Product.crewait(
+		:name => row[0]
+	))
+
+	store = (store_hash[row[1]] ||= Store.crewait(
+		:name => row[1]
+	))
+
+	Availability.crewait(
+		:product_id => product.id,
+		:store_id => store.id
+	)
+	
+end
+
+Crewait.go!
+	
+
+ For instance, suppose you have a Product model, a Location model, and an Availability model (which acts as join between Product and Location).

@@ -29,7 +29,7 @@ class Crewait
         @@hash_of_hashes[table_name][key] = []
       end
     end
-    @@hash_of_hashes[table_name] << hash
+    @@hash_of_hashes[table_name].respectively_insert(hash)
     fake_id = @@hash_of_next_inserts[table_name] + @@hash_of_hashes[table_name].inner_length - 1
     eigenclass = class << hash; self; end
     eigenclass.class_eval {

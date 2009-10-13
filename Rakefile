@@ -8,9 +8,8 @@ spec = Gem::Specification.new do |s|
     s.author    =   "The Almanac"
     s.email     =   "jonah@thealmanac.org"
     s.summary   =   "Fast SQL bulk-insertion using an ActiveRecord-like API"
-    s.files     =   FileList['lib/*.rb', 'spec/*'].to_a
-    s.require_path  =   "lib"
-    s.autorequire   =   "crewait"
+    s.files     =   FileList['lib/**/*.rb', 'spec/*'].to_a
+    # s.require_path  << 'lib/extensions'
     s.test_files = Dir.glob('spec/lib/*.rb')
     s.has_rdoc  =   true
     s.extra_rdoc_files  =   ["README"]

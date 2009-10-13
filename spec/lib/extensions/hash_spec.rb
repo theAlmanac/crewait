@@ -46,14 +46,14 @@ describe Hash do
       products.collect {|x| x.name.to_i}.should == [0, 1, 2, 3, 4]
 	  end
   end
-  describe '#<<(other)' do
+  describe '#respectively_insert(other)' do
     it 'is looks up the keys on the other object and <<s each of the resulting things onto the key\'s values' do
       a = {:name => 'leopard', :category_id => 4}
       b = {:name => 'bob', :category_id => 5, :parent_id => 2, :format_string => 'silly'}
       hash = {:name => [], :category_id => [], :parent_id => []}
-      hash << a
+      hash.respectively_insert a
       hash.should == {:name => ['leopard'], :category_id => [4], :parent_id => [nil]}
-      hash << b
+      hash.respectively_insert b
       hash.should == {:name => ['leopard', 'bob'], :category_id => [4, 5], :parent_id => [nil, 2], :format_string=>[nil, 'silly']}
     end
   end
