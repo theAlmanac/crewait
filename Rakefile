@@ -16,6 +16,7 @@ spec = Gem::Specification.new do |s|
     s.extra_rdoc_files  =   ["README"]
     s.add_dependency('activerecord', '>= 2.2.2')
     s.add_development_dependency('rspec')
+    s.rubyforge_project = 'crewait'
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
