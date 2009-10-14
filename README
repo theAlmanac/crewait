@@ -2,7 +2,7 @@ Crewait helps you perform bulk insertion of ActiveRecord objects while using Act
 
 Suppose you had a csv with a bunch of user data. You want to be able to pull information out of the csv and into your Ruby world intelligently, but you also want to do it as quickly as possible. So, we let you use a familiar notation -- User.crewait, instead of User.create -- and then we perform a single SQL call (or rather n, where n = (the_length_of_the_sql_insert_string/1_000_000.0).ceil calls).
 
-What you would do without "crewait" or AR extensions:
+What you would do with ActiveRecord:
 
 FasterCSV.foreach(csv_path) do |row|
 
@@ -14,8 +14,6 @@ FasterCSV.foreach(csv_path) do |row|
 	)
 	
 end
-
-How long it would take:
 
 What you would do with AR extensions:
 
@@ -33,7 +31,7 @@ User.import(
   array
 )
 
-How long it would take:
+What you would do with crewait:
 
 Crewait.start_waiting
 
@@ -50,12 +48,11 @@ end
 
 Crewait.go!
 
-How long it would take:
 
 How does it work? The answer is that "crewait" isn't actually creating a User object all, but is simply taking the hash passed to it and storing it in another hash, which awaits the "go!" method. So, you might ask, what if you need the object that would normally be returned by "create"? For instance, what if you need to include foreign keys in your bulk insertion? Consider this example, in which we have a Product model, a Store model, and a join table Availability (which specifies whether or not a given product is available at a given store). Suppose we have a csv with a row for each availability -- where the first row is the name of the product and second row is the name of the store its available at. You can see that on the first appearance of a given product or store, it gets "crewait"-ed, and the resulting object is added to a hash. For each availability, the "crewait"-ed product and store are pulled out of their respective hashes, and then we call the id method on them. As long as there's no one else interacting with these tables in your database, Crewait knows what those ids will be once the insertion is complete, and lets you write code pretty much as you would anyway:
 
 
-How you might do using ActiveRecord:
+How you might do this using ActiveRecord:
 
 product_hash = {}
 store_hash = {}
@@ -110,10 +107,8 @@ Availability.import(
   availability_array
 )
 
-# IT WOULD BE UGLY 
-# I'M RUSHED 
-# PLEASE TRUST ME NYC.RB!
 
+What you might do with crewait:
 
 Crewait.start_waiting
 
@@ -137,6 +132,3 @@ FasterCSV.foreach(csv_path) do |row|
 end
 
 Crewait.go!
-	
-
- For instance, suppose you have a Product model, a Location model, and an Availability model (which acts as join between Product and Location).
