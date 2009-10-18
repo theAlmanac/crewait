@@ -22,15 +22,16 @@ class Hash
   # this was originally called "<<", but changed for namespacing
   def respectively_insert(thing)
     new_keys = thing.keys - self.keys
-    length = self.inner_length unless new_keys.empty?
+    length = new_keys.empty? ? 0 : self.inner_length 
     new_keys.each do |key|
-      self[key] = Array.new(length || 0)
+      self[key] = Array.new(length)
     end
-    (thing.keys | self.keys).each do |key|
-      self[key] << (thing[key] || nil)
+    self.keys.each do |key|
+      self[key] << thing[key]
     end
   end
   def inner_length
     !self.values.empty? ? self.values.first.length : nil
   end
 end
+

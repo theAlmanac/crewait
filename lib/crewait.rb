@@ -23,13 +23,9 @@ class Crewait
     # if this class is new, add in the next_insert_value
     @@hash_of_next_inserts[table_name] ||= model.next_insert_id
     # if this class is new, create a new hash to receive it
-    if !@@hash_of_hashes[table_name]
-      @@hash_of_hashes[table_name] = {}
-      hash.keys.each do |key|
-        @@hash_of_hashes[table_name][key] = []
-      end
-    end
+    @@hash_of_hashes[table_name] ||= {}
     @@hash_of_hashes[table_name].respectively_insert(hash)
+    # add dummy methods
     fake_id = @@hash_of_next_inserts[table_name] + @@hash_of_hashes[table_name].inner_length - 1
     eigenclass = class << hash; self; end
     eigenclass.class_eval {
@@ -49,3 +45,4 @@ class Crewait
     @@hash_of_next_inserts = {}
   end
 end
+
