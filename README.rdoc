@@ -1,134 +1,25 @@
-Crewait helps you perform bulk insertion of ActiveRecord objects while using ActiveRecord like language.
+= Crewait
 
-Suppose you had a csv with a bunch of user data. You want to be able to pull information out of the csv and into your Ruby world intelligently, but you also want to do it as quickly as possible. So, we let you use a familiar notation -- User.crewait, instead of User.create -- and then we perform a single SQL call (or rather n, where n = (the_length_of_the_sql_insert_string/1_000_000.0).ceil calls).
+Check out http://jonah.org/articles/crewait_go_.html for a guide to Crewait.
 
-What you would do with ActiveRecord:
+== License
 
-FasterCSV.foreach(csv_path) do |row|
+Copyright (c) 2009 Jonah Bloch-Johnson
 
-	User.create(
-		:username => row[0],
-		:email => row[2],
-		:first_name => row[3],
-		:last_name => row[4]
-	)
-	
-end
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-What you would do with AR extensions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-array = []
-
-FasterCSV.foreach(csv_path) do |row|
-  
-  row.delete_at(1)
-  array << row
-
-end
-
-User.import(
-  [:username, :email, :first_name, :last_name],
-  array
-)
-
-What you would do with crewait:
-
-Crewait.start_waiting
-
-FasterCSV.foreach(csv_path) do |row|
-
-	User.crewait(
-		:username => row[0],
-		:email => row[2],
-		:first_name => row[3],
-		:last_name => row[4]
-	)
-	
-end
-
-Crewait.go!
-
-
-How does it work? The answer is that "crewait" isn't actually creating a User object all, but is simply taking the hash passed to it and storing it in another hash, which awaits the "go!" method. So, you might ask, what if you need the object that would normally be returned by "create"? For instance, what if you need to include foreign keys in your bulk insertion? Consider this example, in which we have a Product model, a Store model, and a join table Availability (which specifies whether or not a given product is available at a given store). Suppose we have a csv with a row for each availability -- where the first row is the name of the product and second row is the name of the store its available at. You can see that on the first appearance of a given product or store, it gets "crewait"-ed, and the resulting object is added to a hash. For each availability, the "crewait"-ed product and store are pulled out of their respective hashes, and then we call the id method on them. As long as there's no one else interacting with these tables in your database, Crewait knows what those ids will be once the insertion is complete, and lets you write code pretty much as you would anyway:
-
-
-How you might do this using ActiveRecord:
-
-product_hash = {}
-store_hash = {}
-FasterCSV.foreach(csv_path) do |row|
-
-	product = (product_hash[row[0]] ||= Product.create(
-		:name => row[0]
-	))
-
-	store = (store_hash[row[1]] ||= Store.create(
-		:name => row[1]
-	))
-
-	product.stores << store
-
-end
-
-What you might do using AR Extensions:
-
-class ActiveRecord::Base
-def next_insert_id
-  database = YAML.load(open(File.join('config', 'database.yml')))[RAILS_ENV]['database']
-  ActiveRecord::Base.connection.execute( "
-    SELECT auto_increment
-    FROM information_schema.tables
-    WHERE table_name='#{self.table_name}' AND
-          table_schema ='#{database}'
-  " ).fetch_hash['auto_increment'].to_i
-end
-product_hash = {}
-store_hash = {}
-availability_array = []
-FasterCSV.foreach(csv_path) do |row|
-
-	product = (product_hash[row[0]] ||= Product.next_insert_id + product_hash.length)
-
-	store = (store_hash[row[1]] ||= Store.next_insert_id + store_hash.length)
-	
-	availability_array << [product_hash[row[0]], store_hash[row[1]]]
-end
-
-Product.import(
-  [:name],
-  product_hash.values.map {|x| [x]}
-)
-Store.import(
-  [:name],
-  store_hash.values.map {|x| [x]}
-)
-Availability.import(
-  [:product_id, :store_id],
-  availability_array
-)
-
-
-What you might do with crewait:
-
-Crewait.start_waiting
-
-product_hash = {}
-store_hash = {}
-FasterCSV.foreach(csv_path) do |row|
-
-	product = (product_hash[row[0]] ||= Product.crewait(
-		:name => row[0]
-	))
-
-	store = (store_hash[row[1]] ||= Store.crewait(
-		:name => row[1]
-	))
-
-	Availability.crewait(
-		:product_id => product.id,
-		:store_id => store.id
-	)
-	
-end
-
-Crewait.go!
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
