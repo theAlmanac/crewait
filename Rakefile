@@ -1,27 +1,15 @@
+# Rakefile
 require 'rubygems'
-require 'rake/gempackagetask'
+require 'rake'
+require 'echoe'
 
-spec = Gem::Specification.new do |s|
-    s.platform  =   Gem::Platform::RUBY
-    s.name      =   "crewait"
-    s.version   =   "0.0.0"
-    s.author    =   "The Almanac"
-    s.email     =   "jonah@thealmanac.org"
-    s.summary   =   "Fast SQL bulk-insertion using an ActiveRecord-like API"
-    s.files     =   FileList['lib/**/*.rb', 'spec/*'].to_a
-    # s.require_path  << 'lib/extensions'
-    s.test_files = Dir.glob('spec/lib/*.rb')
-    s.has_rdoc  =   true
-    s.extra_rdoc_files  =   ["README"]
-    s.add_dependency('activerecord', '>= 2.2.2')
-    s.add_development_dependency('rspec')
-    s.rubyforge_project = 'crewait'
+Echoe.new('crewait', '0.1.0') do |p|
+  p.description    = "Intuitive and fast bulk insertion in ActiveRecord"
+  p.url            = "http://github.com/theAlmanac/crewait"
+  p.author         = "Jonah Bloch-Johnson"
+  p.email          = "me@jonah.org"
+  # p.ignore_pattern = ["tmp/*", "script/*"]
+  p.development_dependencies = []
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
-    pkg.need_tar = true
-end
-
-task :default => "pkg/#{spec.name}-#{spec.version}.gem" do
-    puts "generated latest version"
-end
+Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }
