@@ -39,7 +39,7 @@ module Crewait
   
   module BaseMethods
     def next_insert_id
-      database = YAML.load(open(File.join(RAILS_ROOT, 'config', 'database.yml')))[RAILS_ENV]['database']
+      database = YAML.load(open(File.join('config', 'database.yml')))[RAILS_ENV]['database']
       ActiveRecord::Base.connection.execute( "
         SELECT auto_increment
         FROM information_schema.tables
