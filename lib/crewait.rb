@@ -39,13 +39,20 @@ module Crewait
   
   module BaseMethods
     def next_insert_id
-      database = YAML.load(open(File.join(RAILS_ROOT, 'config', 'database.yml')))[RAILS_ENV]['database']
-      ActiveRecord::Base.connection.execute( "
-        SELECT auto_increment
-        FROM information_schema.tables
-        WHERE table_name='#{self.table_name}' AND
+      config = YAML.load(open(File.join(RAILS_ROOT, 'config', 'database.yml')))
+      database = config[RAILS_ENV]['database']
+      adapter = config[RAILS_ENV]['adapter']
+      case adapter.downcase
+        when 'postgresql' then
+          ActiveRecord::Base.connection.execute("SELECT nextval('#{self.table_name}_id_seq')")[0]["nextval"].to_i
+        else
+          ActiveRecord::Base.connection.execute( "
+            SELECT auto_increment
+            FROM information_schema.tables
+            WHERE table_name='#{self.table_name}' AND
               table_schema ='#{database}'
-      " ).fetch_hash['auto_increment'].to_i
+            " ).fetch_hash['auto_increment'].to_i
+      end
     end
 
     def crewait(hash)
