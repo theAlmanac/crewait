@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{crewait}
-  s.version = "0.1.3"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonah Bloch-Johnson"]
-  s.date = %q{2010-06-25}
+  s.date = %q{2010-06-28}
   s.description = %q{Intuitive and fast bulk insertion in ActiveRecord}
   s.email = %q{me@jonah.org}
   s.extra_rdoc_files = ["README.rdoc", "lib/crewait.rb"]
