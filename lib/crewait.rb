@@ -39,8 +39,8 @@ module Crewait
   
   module BaseMethods
     def next_insert_id
-	  connection = ActiveRecord::Base.connection
-	  database = connection.current_database
+      connection = ActiveRecord::Base.connection
+      database = connection.current_database
       adapter = connection.adapter_name
       case adapter.downcase
         when 'postgresql' then
