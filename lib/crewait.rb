@@ -80,7 +80,7 @@ module Crewait
         values << (self[key].any? {|x| x != true} ? self[key] : self[key].collect {|x| 1})
       end
       values = values.transpose
-      sql = values.to_sql
+      sql = values.to_crewait_sql
 
   		while !sql.empty? do
   			query_string = "insert into #{model_class} (#{keys.join(', ')}) values #{sql.shift}"
@@ -107,7 +107,7 @@ module Crewait
   end
   
   module ArrayMethods
-    def to_sql
+    def to_crewait_sql
     	self.collect {|x| "(#{x.collect{|x| x.nil? ? 'NULL' : "#{ActiveRecord::Base.sanitize(x)}"}.join(', ')})" }
     end
   end
