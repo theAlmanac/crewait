@@ -3,4 +3,3 @@ README.rdoc
 Rakefile
 crewait.gemspec
 lib/crewait.rb
-lib/crewait.rb.orig

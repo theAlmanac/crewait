@@ -3,7 +3,7 @@ require 'rubygems'
 require 'rake'
 require 'echoe'
 
-Echoe.new('crewait', '0.1.4') do |p|
+Echoe.new('crewait', '0.1.5') do |p|
   p.description    = "Intuitive and fast bulk insertion in ActiveRecord"
   p.url            = "http://github.com/theAlmanac/crewait"
   p.author         = "Jonah Bloch-Johnson"

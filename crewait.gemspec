@@ -2,15 +2,15 @@
 
 Gem::Specification.new do |s|
   s.name = %q{crewait}
-  s.version = "0.1.4"
+  s.version = "0.1.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonah Bloch-Johnson"]
   s.date = %q{2010-07-19}
   s.description = %q{Intuitive and fast bulk insertion in ActiveRecord}
   s.email = %q{me@jonah.org}
-  s.extra_rdoc_files = ["README.rdoc", "lib/crewait.rb", "lib/crewait.rb.orig"]
-  s.files = ["Manifest", "README.rdoc", "Rakefile", "crewait.gemspec", "lib/crewait.rb", "lib/crewait.rb.orig"]
+  s.extra_rdoc_files = ["README.rdoc", "lib/crewait.rb"]
+  s.files = ["Manifest", "README.rdoc", "Rakefile", "crewait.gemspec", "lib/crewait.rb"]
   s.homepage = %q{http://github.com/theAlmanac/crewait}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Crewait", "--main", "README.rdoc"]
   s.require_paths = ["lib"]
