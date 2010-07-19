@@ -2,9 +2,14 @@
 
 Check out http://jonah.org/articles/crewait_go_.html for a guide to Crewait.
 
+= Recent heroes
+
+  choffstein added Postgresql support!
+  jakemack resolved some conflicts with Array#to_sql!
+
 == License
 
-Copyright (c) 2009 Jonah Bloch-Johnson & Michael Glass
+Copyright (c) 2009-2010 Jonah Bloch-Johnson & Michael Glass
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
