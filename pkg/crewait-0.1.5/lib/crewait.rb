@@ -10,14 +10,13 @@ module Crewait
   
   # add one crewait instance
   def self.for(model, hash)
-    table_name = model.table_name
     # if this class is new, add in the next_insert_value
-    @@hash_of_next_inserts[table_name] ||= model.next_insert_id
+    @@hash_of_next_inserts[model] ||= model.next_insert_id
     # if this class is new, create a new hash to receive it
-    @@hash_of_hashes[table_name] ||= {}
-    @@hash_of_hashes[table_name].respectively_insert(hash)
+    @@hash_of_hashes[model] ||= {}
+    @@hash_of_hashes[model].respectively_insert(hash)
     # add dummy methods
-    fake_id = @@hash_of_next_inserts[table_name] + @@hash_of_hashes[table_name].inner_length - 1
+    fake_id = @@hash_of_next_inserts[model] + @@hash_of_hashes[model].inner_length - 1
     eigenclass = class << hash; self; end
     eigenclass.class_eval {
       define_method(:id) { fake_id }
@@ -31,7 +30,7 @@ module Crewait
   
   def self.go!
     @@hash_of_hashes.each do |key, hash|
-      hash.import_to_sql(eval(key.classify))
+      hash.import_to_sql(key)
     end
     @@hash_of_hashes = {}
     @@hash_of_next_inserts = {}

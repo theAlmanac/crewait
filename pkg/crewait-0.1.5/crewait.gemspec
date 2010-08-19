@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonah Bloch-Johnson"]
-  s.date = %q{2010-07-19}
+  s.date = %q{2010-08-19}
   s.description = %q{Intuitive and fast bulk insertion in ActiveRecord}
   s.email = %q{me@jonah.org}
   s.extra_rdoc_files = ["README.rdoc", "lib/crewait.rb"]

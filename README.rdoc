@@ -2,7 +2,7 @@
 
 Check out http://jonah.org/articles/crewait_go_.html for a guide to Crewait.
 
-= Recent heroes
+= Heroes
 
   alexkalish made it possible to have namespaced models!
   choffstein added Postgresql support!
