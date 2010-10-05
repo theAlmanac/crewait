@@ -15,16 +15,16 @@ module Crewait
     # if this class is new, create a new hash to receive it
     @@hash_of_hashes[model] ||= {}
     @@hash_of_hashes[model].respectively_insert(hash)
+    hash[:id] = @@hash_of_next_inserts[model] + @@hash_of_hashes[model].inner_length - 1
     # add dummy methods
-    fake_id = @@hash_of_next_inserts[model] + @@hash_of_hashes[model].inner_length - 1
-    eigenclass = class << hash; self; end
-    eigenclass.class_eval {
-      define_method(:id) { fake_id }
-      hash.each do |key, value|
-        define_method(key) { value }
-        # define_method(key.to_s + '=') { set_value(fake_id, )}
-      end
-    }
+    if syntactic_sugar
+      eigenclass = class << hash; self; end
+      eigenclass.class_eval {
+        hash.each do |key, value|
+          define_method(key) { value }
+          # define_method(key.to_s + '=') { set_value(fake_id, )}
+        end
+      }
     hash
   end
   
@@ -39,25 +39,31 @@ module Crewait
   module BaseMethods
     def next_insert_id
       connection = ActiveRecord::Base.connection
-      database = connection.current_database
-      adapter = connection.adapter_name
+      database, adapter = connection.current_database, connection.adapter_name
+      sql = case adapter.downcase
+      when postgresql
+        "SELECT nextval('#{self.table_name}_id_seq')"
+      when /mysql/
+        "SELECT auto_increment FROM information_schema.tables WHERE table_name='#{self.table_name}' AND table_schema ='#{database}'"
+      else
+        raise "your database/adapter (#{adapter}) is not supported by crewait! want to write a patch?"
+      end
+      results = ActiveRecord::Base.connection.execute(sql)
       case adapter.downcase
-        when 'postgresql' then
-          ActiveRecord::Base.connection.execute("SELECT nextval('#{self.table_name}_id_seq')")[0]["nextval"].to_i
-        when 'mysql' then
-          ActiveRecord::Base.connection.execute( "
-            SELECT auto_increment
-            FROM information_schema.tables
-            WHERE table_name='#{self.table_name}' AND
-              table_schema ='#{database}'
-            " ).fetch_hash['auto_increment'].to_i
-        else
-          raise "your database is not supported by crewait! want to write a patch?"
+      when 'postgresql'
+        results[0]["nextval"].to_i
+      when 'mysql'
+        results.fetch_hash['auto_increment'].to_i
+      when 'mysql2'
+        results.map {|x| x[0]}[0].to_i
+      else
+        raise "your database/adapter is not supported by crewait! want to write a patch?"
       end
     end
 
+    # additional options: :before_validation; if it's explicitly set to false, then 
     def crewait(hash)
-  		stay_a_hash = hash.delete(:stay_a_hash)
+  		perform_before_validation_callback = hash.delete(:before_validation)
   		unless stay_a_hash
   			Crewait.for(self, hash)
   		else
