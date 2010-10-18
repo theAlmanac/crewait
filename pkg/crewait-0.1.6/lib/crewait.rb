@@ -2,7 +2,8 @@
 # The idea is the you start a Crewait session, you use ActiveRecord::Base#crewait instead of #create, and then at some point you tell it to go!, which bulk inserts all those created records into SQL.
 module Crewait
   
-  def self.start_waiting
+  def self.start_waiting(config = {})
+    config(config)
     # clear our all important hash caches
     @@hash_of_hashes = {}
     @@hash_of_next_inserts = {}
@@ -17,7 +18,7 @@ module Crewait
     @@hash_of_hashes[model].respectively_insert(hash)
     hash[:id] = @@hash_of_next_inserts[model] + @@hash_of_hashes[model].inner_length - 1
     # add dummy methods
-    if syntactic_sugar
+    unless @@no_methods
       eigenclass = class << hash; self; end
       eigenclass.class_eval {
         hash.each do |key, value|
@@ -25,6 +26,7 @@ module Crewait
           # define_method(key.to_s + '=') { set_value(fake_id, )}
         end
       }
+    end
     hash
   end
   
@@ -36,12 +38,18 @@ module Crewait
     @@hash_of_next_inserts = {}
   end
   
+  def self.config(hash)
+    hash.each do |key, value|
+      class_variable_set("@@#{key}", value)
+    end
+  end
+  
   module BaseMethods
     def next_insert_id
       connection = ActiveRecord::Base.connection
       database, adapter = connection.current_database, connection.adapter_name
       sql = case adapter.downcase
-      when postgresql
+      when 'postgresql'
         "SELECT nextval('#{self.table_name}_id_seq')"
       when /mysql/
         "SELECT auto_increment FROM information_schema.tables WHERE table_name='#{self.table_name}' AND table_schema ='#{database}'"
@@ -57,14 +65,12 @@ module Crewait
       when 'mysql2'
         results.map {|x| x[0]}[0].to_i
       else
-        raise "your database/adapter is not supported by crewait! want to write a patch?"
+        raise "your database/adapter (#{adapter}) is not supported by crewait! want to write a patch?"
       end
     end
 
-    # additional options: :before_validation; if it's explicitly set to false, then 
     def crewait(hash)
-  		perform_before_validation_callback = hash.delete(:before_validation)
-  		unless stay_a_hash
+      unless @@perform_before_validation
   			Crewait.for(self, hash)
   		else
   			object = self.new(hash)

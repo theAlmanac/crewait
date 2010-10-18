@@ -4,6 +4,7 @@ Check out http://jonah.org/articles/crewait_go_.html for a guide to Crewait.
 
 = Heroes
 
+  _capsized added support for the mysql2 adapter!
   alexkalish made it possible to have namespaced models!
   choffstein added Postgresql support!
   jakemack resolved some conflicts with Array#to_sql!
