@@ -18,7 +18,7 @@ module Crewait
     @@hash_of_hashes[model].respectively_insert(hash)
     hash[:id] = @@hash_of_next_inserts[model] + @@hash_of_hashes[model].inner_length - 1
     # add dummy methods
-    unless @@no_methods
+    unless @@config[:no_methods]
       eigenclass = class << hash; self; end
       eigenclass.class_eval {
         hash.each do |key, value|
@@ -39,9 +39,8 @@ module Crewait
   end
   
   def self.config(hash)
-    hash.each do |key, value|
-      class_variable_set("@@#{key}", value)
-    end
+    @@config = {} unless defined?(@@config)
+    @@config.merge!(hash)
   end
   
   module BaseMethods
@@ -70,13 +69,7 @@ module Crewait
     end
 
     def crewait(hash)
-      unless @@perform_before_validation
-  			Crewait.for(self, hash)
-  		else
-  			object = self.new(hash)
-  			object.before_validation
-  	  	Crewait.for(object.class, object.attributes)
-  		end
+			Crewait.for(self, hash)
   	end
   end
   
