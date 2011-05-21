@@ -87,7 +87,11 @@ module Crewait
       sql = values.to_crewait_sql
 
   		while !sql.empty? do
-  			query_string = "insert into #{model_class} (#{keys.join(', ')}) values #{sql.shift}"
+  			query_string = %{ 
+                insert into `#{model_class}` 
+                (#{keys.map{|key| "`"+key+"`"}.join(', ')}) 
+                values #{sql.shift}
+            }
   			while !sql.empty? && (query_string.length + sql.last.length < 999_999)  do
   				query_string << ',' << sql.shift
   			end
