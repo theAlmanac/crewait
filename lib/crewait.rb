@@ -45,7 +45,7 @@ module Crewait
   
   module BaseMethods
     def next_insert_id
-      connection = ActiveRecord::Base.connection
+      connection = self.connection
       database, adapter = connection.current_database, connection.adapter_name
       sql = case adapter.downcase
       when 'postgresql'
@@ -55,7 +55,7 @@ module Crewait
       else
         raise "your database/adapter (#{adapter}) is not supported by crewait! want to write a patch?"
       end
-      results = ActiveRecord::Base.connection.execute(sql)
+      results = connection.execute(sql)
       case adapter.downcase
       when 'postgresql'
         results[0]["nextval"].to_i
@@ -76,7 +76,7 @@ module Crewait
   module HashMethods
     def import_to_sql(model_class)
       if model_class.respond_to? :table_name
-        model_class = model_class.table_name
+        model_table = model_class.table_name
       end
       keys = self.keys
       values = []
@@ -87,11 +87,11 @@ module Crewait
       sql = values.to_crewait_sql
 
   		while !sql.empty? do
-  			query_string = "insert into #{model_class} (#{keys.join(', ')}) values #{sql.shift}"
+  			query_string = "insert into #{model_table} (#{keys.join(', ')}) values #{sql.shift}"
   			while !sql.empty? && (query_string.length + sql.last.length < 999_999)  do
   				query_string << ',' << sql.shift
   			end
-        ActiveRecord::Base.connection.execute(query_string)
+        model_class.connection.execute(query_string)
   		end
     end
     # this was originally called "<<", but changed for namespacing
