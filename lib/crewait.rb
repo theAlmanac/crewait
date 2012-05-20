@@ -87,7 +87,8 @@ module Crewait
       sql = values.to_crewait_sql
 
   		while !sql.empty? do
-  			query_string = "insert into #{model_class} (#{keys.join(', ')}) values #{sql.shift}"
+  		  key_string = keys.collect {|k| ActiveRecord::Base.connection.quote_column_name("#{k}")}.join(', ')
+  			query_string = "insert into #{model_class} (#{key_string}) values #{sql.shift}"
   			while !sql.empty? && (query_string.length + sql.last.length < 999_999)  do
   				query_string << ',' << sql.shift
   			end
