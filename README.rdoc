@@ -1,3 +1,8 @@
+= This fork
+
+  Dan Sadaka changed the import_to_sql method to support multiple databases.  Now use the model's connection
+  instead of the default.
+
 = Crewait
 
 Check out http://jonah.org/articles/crewait_go_.html for a guide to Crewait.
